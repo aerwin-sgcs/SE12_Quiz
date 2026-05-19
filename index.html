@@ -1,0 +1,1255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NESA Software Engineering Year 12 — Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fbf7f0;
+    --card: #ffffff;
+    --ink: #1c1a17;
+    --ink-soft: #5a544c;
+    --line: #e6dfd2;
+    --primary: #1c1a17;
+    --primary-ink: #fbf7f0;
+    --good: #2f6f4a;
+    --good-bg: #e3f1e8;
+    --bad: #a03434;
+    --bad-bg: #f7e3e0;
+    --warn: #8a5a00;
+    --t-ssa: #a03434;
+    --t-web: #2156a8;
+    --t-auto: #2f6f4a;
+    --t-proj: #b46a00;
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(28,26,23,0.06);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  h1, h2, h3 { font-family: 'Fraunces', Georgia, serif; font-weight: 700; line-height: 1.15; margin: 0 0 0.5em; }
+  h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
+  h2 { font-size: clamp(1.3rem, 3vw, 1.7rem); }
+  h3 { font-size: 1.1rem; }
+  .mono { font-family: 'DM Mono', ui-monospace, monospace; }
+  .label { font-family: 'DM Mono', ui-monospace, monospace; font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-soft); }
+  .app { max-width: 820px; margin: 0 auto; padding: clamp(16px, 4vw, 32px); }
+  .screen { display: none; }
+  .screen.active { display: block; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: clamp(20px, 4vw, 32px);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
+  .btn {
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 11px 20px;
+    border-radius: 10px;
+    border: 1px solid var(--ink);
+    background: var(--primary);
+    color: var(--primary-ink);
+    cursor: pointer;
+    transition: transform 0.04s, opacity 0.15s;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .btn:hover { opacity: 0.9; }
+  .btn:active { transform: translateY(1px); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn.ghost { background: transparent; color: var(--ink); }
+  .btn.danger { background: var(--bad); border-color: var(--bad); color: white; }
+  .btn.small { padding: 6px 12px; font-size: 0.85rem; }
+  .btn:focus-visible { outline: 3px solid #6a8db8; outline-offset: 2px; }
+  input[type="text"], input[type="password"], textarea, select {
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--ink);
+    width: 100%;
+  }
+  input:focus, textarea:focus, select:focus { outline: 2px solid var(--ink); outline-offset: -1px; }
+  textarea { resize: vertical; min-height: 80px; }
+  label { display: block; margin: 12px 0 6px; font-weight: 500; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .row .grow { flex: 1; min-width: 0; }
+  .stack > * + * { margin-top: 12px; }
+  .topic-chips { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+  .chip {
+    border: 1.5px solid var(--line);
+    background: var(--card);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--ink);
+  }
+  .chip:hover { border-color: var(--ink); }
+  .chip.selected { background: var(--ink); color: var(--primary-ink); border-color: var(--ink); }
+  .chip[data-topic="ssa"].selected { background: var(--t-ssa); border-color: var(--t-ssa); }
+  .chip[data-topic="web"].selected { background: var(--t-web); border-color: var(--t-web); }
+  .chip[data-topic="auto"].selected { background: var(--t-auto); border-color: var(--t-auto); }
+  .chip[data-topic="proj"].selected { background: var(--t-proj); border-color: var(--t-proj); }
+  .topic-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-family: 'DM Mono', monospace;
+    color: white;
+    margin-right: 8px;
+  }
+  .topic-badge.ssa { background: var(--t-ssa); }
+  .topic-badge.web { background: var(--t-web); }
+  .topic-badge.auto { background: var(--t-auto); }
+  .topic-badge.proj { background: var(--t-proj); }
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+  .progress { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+  .progress > span { display: block; height: 100%; background: var(--ink); transition: width 0.2s; }
+
+  .q-prompt { font-size: 1.1rem; margin: 12px 0 20px; }
+  .opts { list-style: none; padding: 0; margin: 0; }
+  .opts li { margin-bottom: 10px; }
+  .opt-btn {
+    width: 100%;
+    text-align: left;
+    padding: 12px 16px;
+    border: 1.5px solid var(--line);
+    background: var(--card);
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1rem;
+    color: var(--ink);
+  }
+  .opt-btn:hover { border-color: var(--ink); }
+  .opt-btn.selected { border-color: var(--ink); background: #f3eee2; }
+  .match-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; align-items: center; }
+  .match-row .term { padding: 10px 12px; background: #f3eee2; border-radius: 8px; font-weight: 500; }
+  .order-list { list-style: none; padding: 0; margin: 0; }
+  .order-item {
+    padding: 12px 14px;
+    border: 1.5px solid var(--line);
+    background: var(--card);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    cursor: grab;
+  }
+  .order-item[draggable="true"]:active { cursor: grabbing; }
+  .order-item.drag-over { border-color: var(--ink); border-style: dashed; }
+  .order-item .num { font-family: 'DM Mono', monospace; color: var(--ink-soft); font-size: 0.85rem; min-width: 1.5em; }
+  .order-item .move-btns { margin-left: auto; display: flex; gap: 4px; }
+  .order-item .move-btns button { padding: 4px 8px; font-size: 0.85rem; border: 1px solid var(--line); background: var(--card); border-radius: 6px; cursor: pointer; }
+
+  .feedback { margin-top: 20px; padding: 16px; border-radius: 10px; border: 1px solid; }
+  .feedback.correct { background: var(--good-bg); border-color: var(--good); color: #1d4a30; }
+  .feedback.incorrect { background: var(--bad-bg); border-color: var(--bad); color: #5c1c1c; }
+  .feedback strong { font-family: 'Fraunces', serif; font-size: 1.05rem; }
+  .feedback .exp { margin-top: 8px; color: var(--ink); }
+
+  .score-big { font-family: 'Fraunces', serif; font-size: 3rem; font-weight: 700; line-height: 1; margin: 8px 0; }
+  .score-small { color: var(--ink-soft); }
+
+  .q-list { list-style: none; padding: 0; margin: 0; }
+  .q-list li {
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    background: var(--card);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .q-list .q-text { flex: 1; min-width: 200px; }
+  .q-list .q-id { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--ink-soft); }
+  .q-list .q-actions { display: flex; gap: 6px; }
+  .filter-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+
+  .modal-bg { position: fixed; inset: 0; background: rgba(28,26,23,0.6); display: none; align-items: flex-start; justify-content: center; z-index: 100; padding: 20px; overflow-y: auto; }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 24px;
+    max-width: 700px;
+    width: 100%;
+    margin: 20px 0;
+  }
+
+  .report-page { display: none; }
+  .report-page.active { display: block; }
+  .report-page .q-block { padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .report-page .q-block:last-child { border-bottom: 0; }
+  .report-mark { font-family: 'DM Mono', monospace; font-weight: 500; }
+  .report-mark.ok { color: var(--good); }
+  .report-mark.no { color: var(--bad); }
+
+  @media print {
+    body { background: white; }
+    .no-print { display: none !important; }
+    .app { max-width: none; padding: 0; }
+    .card { box-shadow: none; border: 0; padding: 0; margin: 0; }
+    .screen { display: none !important; }
+    .report-page { display: block !important; }
+    .q-block { page-break-inside: avoid; }
+  }
+
+  @media (max-width: 480px) {
+    .match-row { grid-template-columns: 1fr; }
+    .topbar { font-size: 0.9rem; }
+    .score-big { font-size: 2.4rem; }
+  }
+  .error-banner { padding: 16px; background: var(--bad-bg); border: 1px solid var(--bad); border-radius: 10px; color: #5c1c1c; margin-bottom: 16px; }
+  .error-banner pre { white-space: pre-wrap; font-size: 0.85rem; margin: 8px 0 0; }
+  .hidden { display: none !important; }
+  .empty { text-align: center; color: var(--ink-soft); padding: 32px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <section id="screen-home" class="screen active">
+    <div class="card">
+      <p class="label">NESA Software Engineering · Year 12</p>
+      <h1>Practice Quiz</h1>
+      <p>Pick a topic, answer the questions, and generate a printable report to submit to your teacher.</p>
+      <div id="load-error" class="error-banner hidden"></div>
+      <div id="load-fallback" class="hidden">
+        <p>Couldn't auto-load the question bank (this happens when opening the file directly from disk). Upload it manually:</p>
+        <input type="file" id="manual-bank-upload" accept=".json,application/json">
+      </div>
+      <div id="home-main" class="hidden">
+        <label for="student-name">Your name</label>
+        <input type="text" id="student-name" placeholder="Enter your full name" autocomplete="name">
+
+        <p class="label" style="margin-top: 20px;">Topic</p>
+        <div class="topic-chips" id="topic-chips"></div>
+
+        <p class="label" style="margin-top: 16px;">How many questions?</p>
+        <div class="row" style="align-items: center;">
+          <input type="number" id="question-count" min="5" value="10" style="max-width: 110px;">
+          <span class="label" id="count-hint">of <span id="count-max">—</span> available</span>
+          <button class="btn ghost small" id="count-all-btn" type="button">All</button>
+        </div>
+
+        <div style="margin-top: 24px;" class="row">
+          <button class="btn" id="start-btn">Start quiz</button>
+          <button class="btn ghost" id="teacher-btn">Teacher view</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-quiz" class="screen">
+    <div class="topbar">
+      <div>
+        <p class="label" id="quiz-progress-label">Question 1 of 10</p>
+        <div class="progress" style="width: 200px;"><span id="quiz-progress-bar"></span></div>
+      </div>
+      <button class="btn ghost small" id="quit-btn">Quit</button>
+    </div>
+    <div class="card" id="quiz-card">
+      <div id="quiz-topic-line"></div>
+      <p class="q-prompt" id="quiz-prompt"></p>
+      <div id="quiz-input"></div>
+      <div id="quiz-feedback" class="hidden"></div>
+      <div style="margin-top: 20px;">
+        <button class="btn" id="submit-btn">Submit answer</button>
+        <button class="btn hidden" id="next-btn">Next question →</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-results" class="screen">
+    <div class="card" style="text-align: center;">
+      <p class="label">Session complete</p>
+      <div class="score-big" id="score-display">0 / 0</div>
+      <div class="score-small" id="score-pct"></div>
+      <p id="score-name" style="margin-top: 16px;"></p>
+    </div>
+    <div class="card" id="wrong-card">
+      <h2 id="wrong-heading">Questions to review</h2>
+      <p class="label" id="wrong-sub">Read these carefully and research anything unclear — then click Redo to try them again.</p>
+      <div id="wrong-list"></div>
+      <div style="margin-top: 20px; text-align: center;">
+        <button class="btn" id="retry-wrong-btn">Redo these questions</button>
+      </div>
+    </div>
+    <details class="card" id="all-results-details">
+      <summary style="cursor: pointer; font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 700;">Show every question</summary>
+      <div id="results-list" style="margin-top: 16px;"></div>
+    </details>
+    <div class="card" style="text-align: center;">
+      <div class="row" style="justify-content: center;">
+        <button class="btn" id="report-btn">Generate report</button>
+        <button class="btn ghost" id="home-btn">Back to home</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-teacher-login" class="screen">
+    <div class="card">
+      <p class="label">Teacher access</p>
+      <h2>Enter PIN</h2>
+      <p>Default PIN is <span class="mono">1234</span>. You can change it after signing in.</p>
+      <label for="pin-input">PIN</label>
+      <input type="password" id="pin-input" inputmode="numeric" maxlength="8" autocomplete="off">
+      <p id="pin-error" class="hidden" style="color: var(--bad); margin-top: 8px;">Wrong PIN.</p>
+      <div style="margin-top: 16px;" class="row">
+        <button class="btn" id="pin-submit">Sign in</button>
+        <button class="btn ghost" id="pin-cancel">Cancel</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-teacher" class="screen">
+    <div class="topbar">
+      <h2 style="margin: 0;">Teacher dashboard</h2>
+      <button class="btn ghost small" id="teacher-exit">Exit</button>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom: 12px;">
+        <button class="btn" id="add-q-btn">+ Add question</button>
+        <button class="btn ghost" id="export-btn">Export JSON</button>
+        <button class="btn ghost" id="import-btn">Import JSON</button>
+        <input type="file" id="import-file" accept=".json,application/json" class="hidden">
+        <button class="btn ghost small" id="change-pin-btn">Change PIN</button>
+      </div>
+      <div class="filter-row">
+        <select id="filter-topic">
+          <option value="">All topics</option>
+        </select>
+        <select id="filter-type">
+          <option value="">All types</option>
+          <option value="mcq">Multiple choice</option>
+          <option value="tf">True / false</option>
+          <option value="match">Matching</option>
+          <option value="order">Ordering</option>
+          <option value="fillin">Fill in the blank</option>
+          <option value="short">Short answer</option>
+        </select>
+      </div>
+      <p id="q-count-line" class="label"></p>
+      <ul class="q-list" id="teacher-q-list"></ul>
+    </div>
+  </section>
+
+  <section id="screen-report" class="screen">
+    <div class="topbar no-print">
+      <h2 style="margin: 0;">Report preview</h2>
+      <div class="row">
+        <button class="btn" id="print-btn">Print / Save as PDF</button>
+        <button class="btn ghost" id="report-back">Back</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="report-page active" id="report-content"></div>
+    </div>
+  </section>
+
+</div>
+
+<div class="modal-bg" id="modal-bg">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script type="module">
+import { z } from "https://esm.sh/zod@3.23.8";
+
+// ============================================================
+// Schema (6.2 — Zod validation)
+// ============================================================
+const baseQ = {
+  id: z.string().min(1),
+  t: z.string().min(1),
+  q: z.string().min(1),
+};
+const mcqSchema = z.object({ ...baseQ, type: z.literal("mcq"), opts: z.array(z.string()).min(2), ans: z.number().int().nonnegative(), exp: z.string().optional() });
+const tfSchema = z.object({ ...baseQ, type: z.literal("tf"), ans: z.boolean(), exp: z.string().optional() });
+const matchSchema = z.object({ ...baseQ, type: z.literal("match"), pairs: z.array(z.tuple([z.string(), z.string()])).min(2), exp: z.string().optional() });
+const orderSchema = z.object({ ...baseQ, type: z.literal("order"), items: z.array(z.string()).min(2), exp: z.string().optional() });
+const fillinSchema = z.object({ ...baseQ, type: z.literal("fillin"), accept: z.array(z.string()).min(1), exp: z.string().optional() });
+const shortSchema = z.object({ ...baseQ, type: z.literal("short"), keywords: z.array(z.string()).min(1), sample: z.string().min(1) });
+const qSchema = z.discriminatedUnion("type", [mcqSchema, tfSchema, matchSchema, orderSchema, fillinSchema, shortSchema]);
+const bankSchema = z.object({
+  _meta: z.object({
+    title: z.string(),
+    version: z.string(),
+    totalQuestions: z.number().optional(),
+    topics: z.record(z.object({ name: z.string(), count: z.number().optional() })),
+  }),
+  questions: z.array(qSchema).min(1),
+});
+
+function validateBank(raw) {
+  const r = bankSchema.safeParse(raw);
+  if (r.success) return { ok: true, data: r.data };
+  const errs = r.error.issues.map(i => {
+    const path = i.path.join('.');
+    const where = i.path[0] === 'questions' && typeof i.path[1] === 'number'
+      ? `question ${raw?.questions?.[i.path[1]]?.id ?? `#${i.path[1]}`}`
+      : path;
+    return `• ${where}: ${i.message}`;
+  });
+  return { ok: false, errors: errs };
+}
+
+// ============================================================
+// State
+// ============================================================
+const state = {
+  bank: null,
+  topics: {},
+  studentName: '',
+  selectedTopic: 'all',
+  quiz: null,
+  filter: { topic: '', type: '' },
+};
+
+const PIN_KEY = 'se12_quiz_teacher_pin';
+
+const $ = id => document.getElementById(id);
+const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const shuffle = a => { const r = a.slice(); for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; } return r; };
+const topicName = t => state.topics[t]?.name ?? t;
+const arrayEqual = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+async function loadBank() {
+  try {
+    const res = await fetch('./question_bank.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const raw = await res.json();
+    return acceptBank(raw);
+  } catch (e) {
+    $('load-fallback').classList.remove('hidden');
+    $('load-error').classList.remove('hidden');
+    $('load-error').innerHTML = `<strong>Couldn't auto-load <span class="mono">question_bank.json</span>.</strong><br>${escapeHtml(e.message)}`;
+  }
+}
+
+function acceptBank(raw) {
+  const v = validateBank(raw);
+  if (!v.ok) {
+    $('load-error').classList.remove('hidden');
+    $('load-error').innerHTML = `<strong>Question bank is invalid:</strong><pre>${escapeHtml(v.errors.join('\n'))}</pre>`;
+    $('home-main').classList.add('hidden');
+    return false;
+  }
+  state.bank = v.data;
+  state.topics = v.data._meta.topics;
+  $('load-error').classList.add('hidden');
+  $('load-fallback').classList.add('hidden');
+  $('home-main').classList.remove('hidden');
+  renderHome();
+  return true;
+}
+
+$('manual-bank-upload').addEventListener('change', async (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  try {
+    const text = await f.text();
+    acceptBank(JSON.parse(text));
+  } catch (err) {
+    $('load-error').classList.remove('hidden');
+    $('load-error').innerHTML = `<strong>Invalid JSON file:</strong> ${escapeHtml(err.message)}`;
+  }
+});
+
+// ============================================================
+// Home
+// ============================================================
+function renderHome() {
+  const chips = $('topic-chips');
+  chips.innerHTML = '';
+  const all = document.createElement('button');
+  all.className = 'chip selected';
+  all.textContent = 'All topics';
+  all.dataset.topic = 'all';
+  chips.appendChild(all);
+  for (const [key, t] of Object.entries(state.topics)) {
+    const c = document.createElement('button');
+    c.className = 'chip';
+    c.dataset.topic = key;
+    c.textContent = `${t.name} (${state.bank.questions.filter(q => q.t === key).length})`;
+    chips.appendChild(c);
+  }
+  state.selectedTopic = 'all';
+  updateCountMax();
+  chips.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => {
+      chips.querySelectorAll('.chip').forEach(x => x.classList.remove('selected'));
+      c.classList.add('selected');
+      state.selectedTopic = c.dataset.topic;
+      updateCountMax();
+    });
+  });
+}
+
+function poolSize() {
+  return state.selectedTopic === 'all'
+    ? state.bank.questions.length
+    : state.bank.questions.filter(q => q.t === state.selectedTopic).length;
+}
+
+function updateCountMax() {
+  const max = poolSize();
+  const input = $('question-count');
+  input.max = max;
+  input.min = Math.min(5, max);
+  $('count-max').textContent = max;
+  let v = parseInt(input.value, 10);
+  if (isNaN(v) || v > max) input.value = max;
+  if (v < input.min) input.value = input.min;
+}
+
+$('count-all-btn').addEventListener('click', () => {
+  $('question-count').value = poolSize();
+});
+
+$('start-btn').addEventListener('click', () => {
+  const name = $('student-name').value.trim();
+  if (!name) { $('student-name').focus(); return; }
+  state.studentName = name;
+  const pool = state.selectedTopic === 'all'
+    ? state.bank.questions
+    : state.bank.questions.filter(q => q.t === state.selectedTopic);
+  if (pool.length === 0) { alert('No questions in that topic.'); return; }
+  const requested = parseInt($('question-count').value, 10);
+  if (isNaN(requested) || requested < 5) {
+    alert('Please choose at least 5 questions.');
+    $('question-count').focus();
+    return;
+  }
+  const n = Math.min(requested, pool.length);
+  startQuiz(shuffle(pool).slice(0, n));
+});
+
+$('teacher-btn').addEventListener('click', () => {
+  $('pin-input').value = '';
+  $('pin-error').classList.add('hidden');
+  showScreen('screen-teacher-login');
+  setTimeout(() => $('pin-input').focus(), 50);
+});
+
+// ============================================================
+// Quiz
+// ============================================================
+function startQuiz(questions) {
+  state.quiz = { questions, index: 0, answers: [], current: null };
+  showScreen('screen-quiz');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = state.quiz.questions[state.quiz.index];
+  state.quiz.current = { answer: null, submitted: false };
+  $('quiz-progress-label').textContent = `Question ${state.quiz.index + 1} of ${state.quiz.questions.length}`;
+  $('quiz-progress-bar').style.width = `${(state.quiz.index / state.quiz.questions.length) * 100}%`;
+  $('quiz-topic-line').innerHTML = `<span class="topic-badge ${q.t}">${escapeHtml(topicName(q.t))}</span><span class="label">${q.type}</span>`;
+  $('quiz-prompt').textContent = q.q;
+  $('quiz-feedback').classList.add('hidden');
+  $('quiz-feedback').innerHTML = '';
+  $('submit-btn').classList.remove('hidden');
+  $('submit-btn').disabled = true;
+  $('next-btn').classList.add('hidden');
+  const renderers = {
+    mcq: renderMcq, tf: renderTf, match: renderMatch,
+    order: renderOrder, fillin: renderFillin, short: renderShort,
+  };
+  renderers[q.type](q, $('quiz-input'));
+}
+
+function setSubmittable(ok) { $('submit-btn').disabled = !ok; }
+
+function renderMcq(q, host) {
+  host.innerHTML = '';
+  const ul = document.createElement('ul');
+  ul.className = 'opts';
+  q.opts.forEach((opt, i) => {
+    const li = document.createElement('li');
+    const b = document.createElement('button');
+    b.className = 'opt-btn';
+    b.type = 'button';
+    b.textContent = opt;
+    b.addEventListener('click', () => {
+      ul.querySelectorAll('.opt-btn').forEach(x => x.classList.remove('selected'));
+      b.classList.add('selected');
+      state.quiz.current.answer = i;
+      setSubmittable(true);
+    });
+    li.appendChild(b);
+    ul.appendChild(li);
+  });
+  host.appendChild(ul);
+}
+
+function renderTf(q, host) {
+  host.innerHTML = '';
+  const ul = document.createElement('ul');
+  ul.className = 'opts';
+  [['True', true], ['False', false]].forEach(([label, val]) => {
+    const li = document.createElement('li');
+    const b = document.createElement('button');
+    b.className = 'opt-btn';
+    b.type = 'button';
+    b.textContent = label;
+    b.addEventListener('click', () => {
+      ul.querySelectorAll('.opt-btn').forEach(x => x.classList.remove('selected'));
+      b.classList.add('selected');
+      state.quiz.current.answer = val;
+      setSubmittable(true);
+    });
+    li.appendChild(b);
+    ul.appendChild(li);
+  });
+  host.appendChild(ul);
+}
+
+function renderMatch(q, host) {
+  host.innerHTML = '';
+  const shuffledDefs = shuffle(q.pairs.map(p => p[1]));
+  const selects = [];
+  q.pairs.forEach(([term]) => {
+    const row = document.createElement('div');
+    row.className = 'match-row';
+    const t = document.createElement('div');
+    t.className = 'term';
+    t.textContent = term;
+    const sel = document.createElement('select');
+    sel.innerHTML = '<option value="">— choose —</option>' + shuffledDefs.map((d, j) => `<option value="${j}">${escapeHtml(d)}</option>`).join('');
+    sel.addEventListener('change', () => {
+      state.quiz.current.answer = selects.map(s => s.value === '' ? null : shuffledDefs[+s.value]);
+      setSubmittable(selects.every(s => s.value !== ''));
+    });
+    selects.push(sel);
+    row.appendChild(t);
+    row.appendChild(sel);
+    host.appendChild(row);
+  });
+  state.quiz.current.answer = q.pairs.map(() => null);
+}
+
+function renderOrder(q, host) {
+  host.innerHTML = '';
+  let items = shuffle(q.items);
+  while (q.items.length > 1 && arrayEqual(items, q.items)) items = shuffle(q.items);
+  const ul = document.createElement('ul');
+  ul.className = 'order-list';
+
+  function render() {
+    ul.innerHTML = '';
+    items.forEach((text, i) => {
+      const li = document.createElement('li');
+      li.className = 'order-item';
+      li.draggable = true;
+      li.dataset.idx = i;
+      li.innerHTML = `<span class="num">${i + 1}.</span><span style="flex:1;">${escapeHtml(text)}</span>`;
+      const btns = document.createElement('span');
+      btns.className = 'move-btns';
+      const up = document.createElement('button'); up.type = 'button'; up.textContent = '↑'; up.disabled = i === 0; up.setAttribute('aria-label', 'Move up');
+      const down = document.createElement('button'); down.type = 'button'; down.textContent = '↓'; down.disabled = i === items.length - 1; down.setAttribute('aria-label', 'Move down');
+      up.addEventListener('click', () => { if (i > 0) { [items[i-1], items[i]] = [items[i], items[i-1]]; render(); } });
+      down.addEventListener('click', () => { if (i < items.length - 1) { [items[i+1], items[i]] = [items[i], items[i+1]]; render(); } });
+      btns.appendChild(up); btns.appendChild(down);
+      li.appendChild(btns);
+      li.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', String(i)); });
+      li.addEventListener('dragover', e => { e.preventDefault(); li.classList.add('drag-over'); });
+      li.addEventListener('dragleave', () => li.classList.remove('drag-over'));
+      li.addEventListener('drop', e => {
+        e.preventDefault();
+        li.classList.remove('drag-over');
+        const from = parseInt(e.dataTransfer.getData('text/plain'), 10);
+        const to = i;
+        if (from === to || isNaN(from)) return;
+        const moved = items.splice(from, 1)[0];
+        items.splice(to, 0, moved);
+        render();
+      });
+      ul.appendChild(li);
+    });
+    state.quiz.current.answer = items.slice();
+  }
+  render();
+  host.appendChild(ul);
+  setSubmittable(true);
+}
+
+function renderFillin(q, host) {
+  host.innerHTML = '';
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.placeholder = 'Type your answer';
+  inp.autocomplete = 'off';
+  inp.addEventListener('input', () => {
+    state.quiz.current.answer = inp.value;
+    setSubmittable(inp.value.trim().length > 0);
+  });
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter' && inp.value.trim()) $('submit-btn').click(); });
+  host.appendChild(inp);
+  setTimeout(() => inp.focus(), 50);
+}
+
+function renderShort(q, host) {
+  host.innerHTML = '';
+  const ta = document.createElement('textarea');
+  ta.rows = 5;
+  ta.placeholder = 'Type your answer (2-4 sentences)';
+  ta.addEventListener('input', () => {
+    state.quiz.current.answer = ta.value;
+    setSubmittable(ta.value.trim().length > 0);
+  });
+  host.appendChild(ta);
+  setTimeout(() => ta.focus(), 50);
+}
+
+// ============================================================
+// Marking
+// ============================================================
+function mark(q, ans) {
+  switch (q.type) {
+    case 'mcq': return ans === q.ans;
+    case 'tf': return ans === q.ans;
+    case 'match': return ans && q.pairs.every((p, i) => ans[i] === p[1]);
+    case 'order': return ans && arrayEqual(ans, q.items);
+    case 'fillin': {
+      const a = String(ans || '').trim().toLowerCase();
+      return q.accept.some(x => a === x.toLowerCase() || a.includes(x.toLowerCase()));
+    }
+    case 'short': {
+      const text = String(ans || '').toLowerCase();
+      const hits = q.keywords.filter(k => text.includes(k.toLowerCase())).length;
+      return hits / q.keywords.length >= 0.5;
+    }
+  }
+}
+
+function formatAnswer(q, ans) {
+  if (ans == null || ans === '') return '(no answer)';
+  switch (q.type) {
+    case 'mcq': return q.opts[ans] ?? String(ans);
+    case 'tf': return ans ? 'True' : 'False';
+    case 'match': return q.pairs.map((p, i) => `${p[0]} → ${ans[i] ?? '?'}`).join('; ');
+    case 'order': return ans.map((x, i) => `${i+1}. ${x}`).join(' | ');
+    default: return String(ans);
+  }
+}
+
+function formatCorrect(q) {
+  switch (q.type) {
+    case 'mcq': return q.opts[q.ans];
+    case 'tf': return q.ans ? 'True' : 'False';
+    case 'match': return q.pairs.map(p => `${p[0]} → ${p[1]}`).join('; ');
+    case 'order': return q.items.map((x, i) => `${i+1}. ${x}`).join(' | ');
+    case 'fillin': return q.accept[0];
+    case 'short': return q.sample;
+  }
+}
+
+$('submit-btn').addEventListener('click', () => {
+  const q = state.quiz.questions[state.quiz.index];
+  const ans = state.quiz.current.answer;
+  const correct = mark(q, ans);
+  state.quiz.answers.push({ qid: q.id, answer: ans, correct });
+  state.quiz.current.submitted = true;
+
+  const fb = $('quiz-feedback');
+  fb.classList.remove('hidden');
+  fb.className = 'feedback ' + (correct ? 'correct' : 'incorrect');
+  let html = `<strong>${correct ? '✓ Correct' : '✗ Not quite'}</strong>`;
+  if (!correct) html += `<div class="exp"><span class="label">Correct answer:</span> ${escapeHtml(formatCorrect(q))}</div>`;
+  if (q.type === 'short') html += `<div class="exp"><span class="label">Sample answer:</span> ${escapeHtml(q.sample)}</div>`;
+  if (q.exp) html += `<div class="exp">${escapeHtml(q.exp)}</div>`;
+  fb.innerHTML = html;
+
+  $('quiz-input').querySelectorAll('button, input, select, textarea').forEach(el => el.disabled = true);
+  $('submit-btn').classList.add('hidden');
+  $('next-btn').classList.remove('hidden');
+  $('next-btn').focus();
+});
+
+$('next-btn').addEventListener('click', () => {
+  if (state.quiz.index + 1 < state.quiz.questions.length) {
+    state.quiz.index++;
+    renderQuestion();
+  } else {
+    showResults();
+  }
+});
+
+$('quit-btn').addEventListener('click', () => {
+  if (confirm('Quit this quiz? Your progress will be lost.')) {
+    state.quiz = null;
+    showScreen('screen-home');
+  }
+});
+
+// ============================================================
+// Results
+// ============================================================
+function showResults() {
+  const total = state.quiz.questions.length;
+  const correct = state.quiz.answers.filter(a => a.correct).length;
+  const pct = Math.round((correct / total) * 100);
+  $('score-display').textContent = `${correct} / ${total}`;
+  $('score-pct').textContent = `${pct}%`;
+  $('score-name').textContent = `${state.studentName} · ${new Date().toLocaleDateString()}`;
+  const renderBlock = (q, a) => `
+    <div style="padding: 12px 0; border-bottom: 1px solid var(--line);">
+      <div><span class="topic-badge ${q.t}">${escapeHtml(topicName(q.t))}</span> <span class="report-mark ${a.correct ? 'ok' : 'no'}">${a.correct ? '✓' : '✗'}</span></div>
+      <div style="margin-top: 6px;"><strong>${escapeHtml(q.q)}</strong></div>
+      <div style="margin-top: 6px;"><span class="label">Your answer:</span> ${escapeHtml(formatAnswer(q, a.answer))}</div>
+      ${a.correct ? '' : `<div><span class="label">Correct answer:</span> ${escapeHtml(formatCorrect(q))}</div>`}
+      ${a.correct || !q.exp ? '' : `<div style="margin-top: 4px; color: var(--ink-soft);">${escapeHtml(q.exp)}</div>`}
+    </div>
+  `;
+
+  // All-questions list (collapsed by default)
+  $('results-list').innerHTML = state.quiz.questions.map((q, i) => renderBlock(q, state.quiz.answers[i])).join('');
+
+  // Wrong-only list (primary view)
+  const wrongPairs = state.quiz.questions
+    .map((q, i) => ({ q, a: state.quiz.answers[i] }))
+    .filter(p => !p.a.correct);
+  const wrongList = $('wrong-list');
+  const retryBtn = $('retry-wrong-btn');
+  if (wrongPairs.length === 0) {
+    $('wrong-heading').textContent = '🎉 All correct!';
+    $('wrong-sub').textContent = 'Nothing to review. Generate your report below.';
+    wrongList.innerHTML = '';
+    retryBtn.style.display = 'none';
+  } else {
+    $('wrong-heading').textContent = `${wrongPairs.length} question${wrongPairs.length === 1 ? '' : 's'} to review`;
+    $('wrong-sub').textContent = 'Read these carefully and research anything unclear — then click Redo to try them again.';
+    wrongList.innerHTML = wrongPairs.map((p, i) => `
+      <div style="padding: 12px 0; border-bottom: 1px solid var(--line);">
+        <div><span class="topic-badge ${p.q.t}">${escapeHtml(topicName(p.q.t))}</span></div>
+        <div style="margin-top: 6px;"><strong>${i + 1}.</strong> ${escapeHtml(p.q.q)}</div>
+      </div>
+    `).join('');
+    retryBtn.style.display = '';
+    retryBtn.textContent = `Redo these ${wrongPairs.length} question${wrongPairs.length === 1 ? '' : 's'}`;
+  }
+  showScreen('screen-results');
+}
+
+$('retry-wrong-btn').addEventListener('click', () => {
+  const wrongIds = state.quiz.answers.filter(a => !a.correct).map(a => a.qid);
+  const wrongQs = wrongIds.map(id => state.quiz.questions.find(q => q.id === id)).filter(Boolean);
+  if (wrongQs.length) startQuiz(shuffle(wrongQs));
+});
+
+$('home-btn').addEventListener('click', () => { state.quiz = null; showScreen('screen-home'); });
+
+// ============================================================
+// Report
+// ============================================================
+$('report-btn').addEventListener('click', () => {
+  const total = state.quiz.questions.length;
+  const correct = state.quiz.answers.filter(a => a.correct).length;
+  const pct = Math.round((correct / total) * 100);
+  let html = `
+    <h1 style="margin-bottom: 4px;">Quiz Report</h1>
+    <p class="label">NESA Software Engineering · Year 12</p>
+    <p><strong>Name:</strong> ${escapeHtml(state.studentName)}<br>
+    <strong>Date:</strong> ${escapeHtml(new Date().toLocaleString())}<br>
+    <strong>Score:</strong> ${correct} / ${total} (${pct}%)</p>
+    <hr>
+  `;
+  state.quiz.questions.forEach((q, i) => {
+    const a = state.quiz.answers[i];
+    html += `
+      <div class="q-block">
+        <p><strong>Q${i+1}.</strong> [${escapeHtml(topicName(q.t))}] ${escapeHtml(q.q)}</p>
+        <p><span class="label">Your answer:</span> ${escapeHtml(formatAnswer(q, a.answer))}</p>
+        ${a.correct ? '' : `<p><span class="label">Correct answer:</span> ${escapeHtml(formatCorrect(q))}</p>`}
+        <p class="report-mark ${a.correct ? 'ok' : 'no'}">${a.correct ? '✓ Correct' : '✗ Incorrect'}</p>
+      </div>
+    `;
+  });
+  $('report-content').innerHTML = html;
+  showScreen('screen-report');
+});
+
+$('report-back').addEventListener('click', () => showScreen('screen-results'));
+$('print-btn').addEventListener('click', () => window.print());
+
+// ============================================================
+// Teacher
+// ============================================================
+function getStoredPin() { return localStorage.getItem(PIN_KEY) || '1234'; }
+
+$('pin-submit').addEventListener('click', tryPin);
+$('pin-input').addEventListener('keydown', e => { if (e.key === 'Enter') tryPin(); });
+$('pin-cancel').addEventListener('click', () => showScreen('screen-home'));
+
+function tryPin() {
+  if ($('pin-input').value === getStoredPin()) {
+    $('pin-error').classList.add('hidden');
+    openTeacher();
+  } else {
+    $('pin-error').classList.remove('hidden');
+  }
+}
+
+$('teacher-exit').addEventListener('click', () => showScreen('screen-home'));
+
+function openTeacher() {
+  const sel = $('filter-topic');
+  sel.innerHTML = '<option value="">All topics</option>' +
+    Object.entries(state.topics).map(([k, t]) => `<option value="${k}">${escapeHtml(t.name)}</option>`).join('');
+  renderTeacherList();
+  showScreen('screen-teacher');
+}
+
+$('filter-topic').addEventListener('change', e => { state.filter.topic = e.target.value; renderTeacherList(); });
+$('filter-type').addEventListener('change', e => { state.filter.type = e.target.value; renderTeacherList(); });
+
+function renderTeacherList() {
+  const list = $('teacher-q-list');
+  const filtered = state.bank.questions.filter(q =>
+    (!state.filter.topic || q.t === state.filter.topic) &&
+    (!state.filter.type || q.type === state.filter.type)
+  );
+  $('q-count-line').textContent = `${filtered.length} question${filtered.length === 1 ? '' : 's'}`;
+  list.innerHTML = '';
+  if (!filtered.length) {
+    list.innerHTML = '<li class="empty">No questions match the filters.</li>';
+    return;
+  }
+  filtered.forEach(q => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <span class="topic-badge ${q.t}">${escapeHtml(topicName(q.t))}</span>
+      <span class="q-id">${escapeHtml(q.id)} · ${q.type}</span>
+      <span class="q-text">${escapeHtml(q.q)}</span>
+      <span class="q-actions">
+        <button class="btn ghost small" data-act="edit">Edit</button>
+        <button class="btn danger small" data-act="del">Delete</button>
+      </span>
+    `;
+    li.querySelector('[data-act="edit"]').addEventListener('click', () => openEditor(q));
+    li.querySelector('[data-act="del"]').addEventListener('click', () => {
+      if (confirm(`Delete question "${q.id}"?`)) {
+        state.bank.questions = state.bank.questions.filter(x => x.id !== q.id);
+        recountTopics();
+        renderTeacherList();
+      }
+    });
+    list.appendChild(li);
+  });
+}
+
+function recountTopics() {
+  for (const k of Object.keys(state.topics)) {
+    state.topics[k].count = state.bank.questions.filter(q => q.t === k).length;
+  }
+  state.bank._meta.totalQuestions = state.bank.questions.length;
+  state.bank._meta.topics = state.topics;
+}
+
+function openEditor(existing) {
+  const isNew = !existing;
+  const q = existing
+    ? JSON.parse(JSON.stringify(existing))
+    : { id: '', t: Object.keys(state.topics)[0], type: 'mcq', q: '', opts: ['', ''], ans: 0, exp: '' };
+  const modal = $('modal');
+
+  function fieldsFor(type) {
+    switch (type) {
+      case 'mcq':
+        return `
+          ${(q.opts || ['', '']).map((o, i) => `
+            <div class="row" style="align-items:center;">
+              <input type="radio" name="ans" value="${i}" ${q.ans === i ? 'checked' : ''} aria-label="Mark as correct">
+              <input type="text" class="grow" data-fld="opt" data-i="${i}" value="${escapeHtml(o)}" placeholder="Option ${i+1}">
+              <button class="btn small ghost" data-fld="opt-del" data-i="${i}" type="button">−</button>
+            </div>`).join('')}
+          <button class="btn ghost small" data-fld="opt-add" type="button">+ Add option</button>
+        `;
+      case 'tf':
+        return `
+          <label><input type="radio" name="ans" value="true" ${q.ans === true ? 'checked' : ''}> True</label>
+          <label><input type="radio" name="ans" value="false" ${q.ans === false ? 'checked' : ''}> False</label>
+        `;
+      case 'match':
+        return `
+          ${(q.pairs || [['',''],['','']]).map((p, i) => `
+            <div class="row">
+              <input type="text" class="grow" data-fld="pair-term" data-i="${i}" value="${escapeHtml(p[0])}" placeholder="Term ${i+1}">
+              <input type="text" class="grow" data-fld="pair-def" data-i="${i}" value="${escapeHtml(p[1])}" placeholder="Definition ${i+1}">
+              <button class="btn small ghost" data-fld="pair-del" data-i="${i}" type="button">−</button>
+            </div>`).join('')}
+          <button class="btn ghost small" data-fld="pair-add" type="button">+ Add pair</button>
+        `;
+      case 'order':
+        return `
+          ${(q.items || ['','']).map((it, i) => `
+            <div class="row">
+              <span class="mono" style="padding-top: 12px; min-width: 1.5em;">${i+1}.</span>
+              <input type="text" class="grow" data-fld="item" data-i="${i}" value="${escapeHtml(it)}" placeholder="Step ${i+1}">
+              <button class="btn small ghost" data-fld="item-del" data-i="${i}" type="button">−</button>
+            </div>`).join('')}
+          <button class="btn ghost small" data-fld="item-add" type="button">+ Add step</button>
+          <p class="label" style="margin-top:8px;">Order shown is the correct order. Students see it shuffled.</p>
+        `;
+      case 'fillin':
+        return `
+          <label>Accepted answers (one per line)</label>
+          <textarea data-fld="accept">${escapeHtml((q.accept || ['']).join('\n'))}</textarea>
+        `;
+      case 'short':
+        return `
+          <label>Keywords (one per line)</label>
+          <textarea data-fld="keywords">${escapeHtml((q.keywords || ['']).join('\n'))}</textarea>
+          <label>Sample answer</label>
+          <textarea data-fld="sample">${escapeHtml(q.sample || '')}</textarea>
+        `;
+    }
+  }
+
+  function showExpField(type) { return type !== 'short'; }
+
+  function render() {
+    modal.innerHTML = `
+      <h2>${isNew ? 'Add question' : 'Edit question'}</h2>
+      <label>ID</label>
+      <input type="text" data-fld="id" value="${escapeHtml(q.id)}" placeholder="e.g. ssa20">
+      <div class="row">
+        <div class="grow">
+          <label>Topic</label>
+          <select data-fld="t">
+            ${Object.entries(state.topics).map(([k, t]) => `<option value="${k}" ${q.t === k ? 'selected' : ''}>${escapeHtml(t.name)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="grow">
+          <label>Type</label>
+          <select data-fld="type">
+            <option value="mcq" ${q.type === 'mcq' ? 'selected' : ''}>Multiple choice</option>
+            <option value="tf" ${q.type === 'tf' ? 'selected' : ''}>True / false</option>
+            <option value="match" ${q.type === 'match' ? 'selected' : ''}>Matching</option>
+            <option value="order" ${q.type === 'order' ? 'selected' : ''}>Ordering</option>
+            <option value="fillin" ${q.type === 'fillin' ? 'selected' : ''}>Fill in the blank</option>
+            <option value="short" ${q.type === 'short' ? 'selected' : ''}>Short answer</option>
+          </select>
+        </div>
+      </div>
+      <label>Question text</label>
+      <textarea data-fld="q">${escapeHtml(q.q)}</textarea>
+      <div id="type-fields" style="margin-top: 12px;">${fieldsFor(q.type)}</div>
+      ${showExpField(q.type) ? `<label>Explanation (optional)</label><textarea data-fld="exp">${escapeHtml(q.exp || '')}</textarea>` : ''}
+      <div id="editor-error" class="error-banner hidden"></div>
+      <div class="row" style="margin-top: 16px; justify-content: flex-end;">
+        <button class="btn ghost" data-fld="cancel" type="button">Cancel</button>
+        <button class="btn" data-fld="save" type="button">Save</button>
+      </div>
+    `;
+    wireEditor();
+  }
+
+  function wireEditor() {
+    modal.querySelector('[data-fld="id"]').addEventListener('input', e => q.id = e.target.value.trim());
+    modal.querySelector('[data-fld="t"]').addEventListener('change', e => q.t = e.target.value);
+    modal.querySelector('[data-fld="q"]').addEventListener('input', e => q.q = e.target.value);
+    const expEl = modal.querySelector('[data-fld="exp"]');
+    if (expEl) expEl.addEventListener('input', e => q.exp = e.target.value);
+    modal.querySelector('[data-fld="type"]').addEventListener('change', e => {
+      q.type = e.target.value;
+      if (q.type === 'mcq') { q.opts = q.opts && q.opts.length >= 2 ? q.opts : ['', '']; q.ans = 0; }
+      if (q.type === 'tf') { q.ans = true; }
+      if (q.type === 'match') { q.pairs = q.pairs && q.pairs.length >= 2 ? q.pairs : [['',''],['','']]; }
+      if (q.type === 'order') { q.items = q.items && q.items.length >= 2 ? q.items : ['','']; }
+      if (q.type === 'fillin') { q.accept = q.accept || ['']; }
+      if (q.type === 'short') { q.keywords = q.keywords || ['']; q.sample = q.sample || ''; }
+      render();
+    });
+
+    modal.querySelectorAll('[data-fld="opt"]').forEach(el => {
+      el.addEventListener('input', e => { q.opts[+e.target.dataset.i] = e.target.value; });
+    });
+    modal.querySelectorAll('[data-fld="opt-del"]').forEach(el => {
+      el.addEventListener('click', () => {
+        if (q.opts.length <= 2) return;
+        const i = +el.dataset.i;
+        q.opts.splice(i, 1);
+        if (q.ans >= q.opts.length) q.ans = 0;
+        render();
+      });
+    });
+    const optAdd = modal.querySelector('[data-fld="opt-add"]');
+    if (optAdd) optAdd.addEventListener('click', () => { q.opts.push(''); render(); });
+    modal.querySelectorAll('input[name="ans"]').forEach(r => {
+      r.addEventListener('change', e => {
+        if (q.type === 'mcq') q.ans = parseInt(e.target.value, 10);
+        if (q.type === 'tf') q.ans = e.target.value === 'true';
+      });
+    });
+
+    modal.querySelectorAll('[data-fld="pair-term"]').forEach(el => el.addEventListener('input', e => { q.pairs[+e.target.dataset.i][0] = e.target.value; }));
+    modal.querySelectorAll('[data-fld="pair-def"]').forEach(el => el.addEventListener('input', e => { q.pairs[+e.target.dataset.i][1] = e.target.value; }));
+    modal.querySelectorAll('[data-fld="pair-del"]').forEach(el => el.addEventListener('click', () => {
+      if (q.pairs.length <= 2) return;
+      q.pairs.splice(+el.dataset.i, 1);
+      render();
+    }));
+    const pairAdd = modal.querySelector('[data-fld="pair-add"]');
+    if (pairAdd) pairAdd.addEventListener('click', () => { q.pairs.push(['','']); render(); });
+
+    modal.querySelectorAll('[data-fld="item"]').forEach(el => el.addEventListener('input', e => { q.items[+e.target.dataset.i] = e.target.value; }));
+    modal.querySelectorAll('[data-fld="item-del"]').forEach(el => el.addEventListener('click', () => {
+      if (q.items.length <= 2) return;
+      q.items.splice(+el.dataset.i, 1);
+      render();
+    }));
+    const itemAdd = modal.querySelector('[data-fld="item-add"]');
+    if (itemAdd) itemAdd.addEventListener('click', () => { q.items.push(''); render(); });
+
+    const acc = modal.querySelector('[data-fld="accept"]');
+    if (acc) acc.addEventListener('input', e => { q.accept = e.target.value.split('\n').map(s => s.trim()).filter(Boolean); });
+    const kw = modal.querySelector('[data-fld="keywords"]');
+    if (kw) kw.addEventListener('input', e => { q.keywords = e.target.value.split('\n').map(s => s.trim()).filter(Boolean); });
+    const samp = modal.querySelector('[data-fld="sample"]');
+    if (samp) samp.addEventListener('input', e => { q.sample = e.target.value; });
+
+    modal.querySelector('[data-fld="cancel"]').addEventListener('click', closeModal);
+    modal.querySelector('[data-fld="save"]').addEventListener('click', save);
+  }
+
+  function save() {
+    const out = { id: q.id, t: q.t, type: q.type, q: q.q };
+    if (q.type === 'mcq') { out.opts = q.opts; out.ans = q.ans; if (q.exp) out.exp = q.exp; }
+    else if (q.type === 'tf') { out.ans = q.ans; if (q.exp) out.exp = q.exp; }
+    else if (q.type === 'match') { out.pairs = q.pairs; if (q.exp) out.exp = q.exp; }
+    else if (q.type === 'order') { out.items = q.items; if (q.exp) out.exp = q.exp; }
+    else if (q.type === 'fillin') { out.accept = q.accept; if (q.exp) out.exp = q.exp; }
+    else if (q.type === 'short') { out.keywords = q.keywords; out.sample = q.sample; }
+
+    const r = qSchema.safeParse(out);
+    if (!r.success) {
+      const errs = r.error.issues.map(i => `• ${i.path.join('.') || '(root)'}: ${i.message}`).join('\n');
+      const el = $('editor-error');
+      el.classList.remove('hidden');
+      el.innerHTML = `<strong>Cannot save:</strong><pre>${escapeHtml(errs)}</pre>`;
+      return;
+    }
+    const existingIdx = state.bank.questions.findIndex(x => x.id === out.id);
+    if (isNew && existingIdx !== -1) {
+      const el = $('editor-error');
+      el.classList.remove('hidden');
+      el.innerHTML = `<strong>ID "${escapeHtml(out.id)}" already exists.</strong>`;
+      return;
+    }
+    if (!isNew) {
+      const idx = state.bank.questions.findIndex(x => x.id === existing.id);
+      state.bank.questions[idx] = r.data;
+    } else {
+      state.bank.questions.push(r.data);
+    }
+    recountTopics();
+    closeModal();
+    renderTeacherList();
+  }
+
+  render();
+  $('modal-bg').classList.add('open');
+}
+
+function closeModal() { $('modal-bg').classList.remove('open'); $('modal').innerHTML = ''; }
+$('modal-bg').addEventListener('click', e => { if (e.target === $('modal-bg')) closeModal(); });
+
+$('add-q-btn').addEventListener('click', () => openEditor(null));
+
+$('export-btn').addEventListener('click', () => {
+  recountTopics();
+  const blob = new Blob([JSON.stringify(state.bank, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'question_bank.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+$('import-btn').addEventListener('click', () => $('import-file').click());
+$('import-file').addEventListener('change', async (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  try {
+    const text = await f.text();
+    const raw = JSON.parse(text);
+    const v = validateBank(raw);
+    if (!v.ok) {
+      alert('Invalid question bank:\n' + v.errors.join('\n'));
+      return;
+    }
+    if (!confirm(`Replace current question bank with imported file (${raw.questions.length} questions)?`)) return;
+    state.bank = v.data;
+    state.topics = v.data._meta.topics;
+    renderTeacherList();
+  } catch (err) {
+    alert('Couldn\'t read file: ' + err.message);
+  }
+  e.target.value = '';
+});
+
+$('change-pin-btn').addEventListener('click', () => {
+  const modal = $('modal');
+  modal.innerHTML = `
+    <h2>Change PIN</h2>
+    <p>The PIN is stored only in this browser's local storage on this device.</p>
+    <label>New PIN (4–8 digits)</label>
+    <input type="password" id="new-pin" inputmode="numeric" maxlength="8">
+    <p id="new-pin-err" class="hidden" style="color: var(--bad); margin-top: 8px;"></p>
+    <div class="row" style="margin-top: 16px; justify-content: flex-end;">
+      <button class="btn ghost" id="new-pin-cancel" type="button">Cancel</button>
+      <button class="btn" id="new-pin-save" type="button">Save</button>
+    </div>
+  `;
+  $('modal-bg').classList.add('open');
+  $('new-pin-cancel').addEventListener('click', closeModal);
+  $('new-pin-save').addEventListener('click', () => {
+    const v = $('new-pin').value;
+    if (!/^\d{4,8}$/.test(v)) {
+      $('new-pin-err').classList.remove('hidden');
+      $('new-pin-err').textContent = 'PIN must be 4–8 digits.';
+      return;
+    }
+    localStorage.setItem(PIN_KEY, v);
+    closeModal();
+    alert('PIN updated.');
+  });
+});
+
+loadBank();
+</script>
+</body>
+</html>
