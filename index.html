@@ -605,6 +605,8 @@ function renderMcq(q, host) {
   host.appendChild(hint);
   const ul = document.createElement('ul');
   ul.className = 'opts';
+  const selected = new Set();
+  state.quiz.current.answer = [];
   q.opts.forEach((opt, i) => {
     const li = document.createElement('li');
     const b = document.createElement('button');
@@ -612,10 +614,10 @@ function renderMcq(q, host) {
     b.type = 'button';
     b.textContent = opt;
     b.addEventListener('click', () => {
-      ul.querySelectorAll('.opt-btn').forEach(x => x.classList.remove('selected'));
-      b.classList.add('selected');
-      state.quiz.current.answer = i;
-      setSubmittable(true);
+      if (selected.has(i)) { selected.delete(i); b.classList.remove('selected'); }
+      else { selected.add(i); b.classList.add('selected'); }
+      state.quiz.current.answer = [...selected].sort((a,b)=>a-b);
+      setSubmittable(selected.size > 0);
     });
     li.appendChild(b);
     ul.appendChild(li);
@@ -776,7 +778,7 @@ function renderShort(q, host) {
 // ============================================================
 function mark(q, ans) {
   switch (q.type) {
-    case 'mcq': return ans === q.ans;
+    case 'mcq': return Array.isArray(ans) && ans.length === 1 && ans[0] === q.ans;
     case 'multi': {
       if (!Array.isArray(ans)) return false;
       const a = [...ans].sort((x,y)=>x-y);
@@ -801,7 +803,7 @@ function mark(q, ans) {
 function formatAnswer(q, ans) {
   if (ans == null || ans === '') return '(no answer)';
   switch (q.type) {
-    case 'mcq': return q.opts[ans] ?? String(ans);
+    case 'mcq':
     case 'multi': return Array.isArray(ans) && ans.length
       ? ans.map(i => `${String.fromCharCode(65+i)}) ${q.opts[i] ?? '?'}`).join(', ')
       : '(no answer)';
