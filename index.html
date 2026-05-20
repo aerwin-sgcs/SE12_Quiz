@@ -345,6 +345,7 @@
         <select id="filter-type">
           <option value="">All types</option>
           <option value="mcq">Multiple choice</option>
+          <option value="multi">Multiple answer</option>
           <option value="tf">True / false</option>
           <option value="match">Matching</option>
           <option value="order">Ordering</option>
@@ -388,12 +389,13 @@ const baseQ = {
   q: z.string().min(1),
 };
 const mcqSchema = z.object({ ...baseQ, type: z.literal("mcq"), opts: z.array(z.string()).min(2), ans: z.number().int().nonnegative(), exp: z.string().optional() });
+const multiSchema = z.object({ ...baseQ, type: z.literal("multi"), opts: z.array(z.string()).min(2), ans: z.array(z.number().int().nonnegative()).min(1), exp: z.string().optional() });
 const tfSchema = z.object({ ...baseQ, type: z.literal("tf"), ans: z.boolean(), exp: z.string().optional() });
 const matchSchema = z.object({ ...baseQ, type: z.literal("match"), pairs: z.array(z.tuple([z.string(), z.string()])).min(2), exp: z.string().optional() });
 const orderSchema = z.object({ ...baseQ, type: z.literal("order"), items: z.array(z.string()).min(2), exp: z.string().optional() });
 const fillinSchema = z.object({ ...baseQ, type: z.literal("fillin"), accept: z.array(z.string()).min(1), exp: z.string().optional() });
 const shortSchema = z.object({ ...baseQ, type: z.literal("short"), keywords: z.array(z.string()).min(1), sample: z.string().min(1) });
-const qSchema = z.discriminatedUnion("type", [mcqSchema, tfSchema, matchSchema, orderSchema, fillinSchema, shortSchema]);
+const qSchema = z.discriminatedUnion("type", [mcqSchema, multiSchema, tfSchema, matchSchema, orderSchema, fillinSchema, shortSchema]);
 const bankSchema = z.object({
   _meta: z.object({
     title: z.string(),
@@ -575,7 +577,7 @@ function renderQuestion() {
   state.quiz.current = { answer: null, submitted: false };
   $('quiz-progress-label').textContent = `Question ${state.quiz.index + 1} of ${state.quiz.questions.length}`;
   $('quiz-progress-bar').style.width = `${(state.quiz.index / state.quiz.questions.length) * 100}%`;
-  $('quiz-topic-line').innerHTML = `<span class="topic-badge ${q.t}">${escapeHtml(topicName(q.t))}</span><span class="label">${q.type}</span>`;
+  $('quiz-topic-line').innerHTML = `<span class="topic-badge ${q.t}">${escapeHtml(topicName(q.t))}</span><span class="label">${typeLabel(q.type)}</span>`;
   $('quiz-prompt').textContent = q.q;
   $('quiz-feedback').classList.add('hidden');
   $('quiz-feedback').innerHTML = '';
@@ -583,16 +585,24 @@ function renderQuestion() {
   $('submit-btn').disabled = true;
   $('next-btn').classList.add('hidden');
   const renderers = {
-    mcq: renderMcq, tf: renderTf, match: renderMatch,
+    mcq: renderMcq, multi: renderMulti, tf: renderTf, match: renderMatch,
     order: renderOrder, fillin: renderFillin, short: renderShort,
   };
   renderers[q.type](q, $('quiz-input'));
 }
 
+const TYPE_LABELS = { mcq:'Multiple choice', multi:'Multiple answer', tf:'True / false', match:'Matching', order:'Ordering', fillin:'Fill in the blank', short:'Short answer' };
+function typeLabel(t){ return TYPE_LABELS[t] || t; }
+
 function setSubmittable(ok) { $('submit-btn').disabled = !ok; }
 
 function renderMcq(q, host) {
   host.innerHTML = '';
+  const hint = document.createElement('p');
+  hint.className = 'label';
+  hint.style.marginBottom = '8px';
+  hint.textContent = 'Select all that applies to answer the question.';
+  host.appendChild(hint);
   const ul = document.createElement('ul');
   ul.className = 'opts';
   q.opts.forEach((opt, i) => {
@@ -606,6 +616,35 @@ function renderMcq(q, host) {
       b.classList.add('selected');
       state.quiz.current.answer = i;
       setSubmittable(true);
+    });
+    li.appendChild(b);
+    ul.appendChild(li);
+  });
+  host.appendChild(ul);
+}
+
+function renderMulti(q, host) {
+  host.innerHTML = '';
+  const hint = document.createElement('p');
+  hint.className = 'label';
+  hint.style.marginBottom = '8px';
+  hint.textContent = 'Select all that applies to answer the question.';
+  host.appendChild(hint);
+  const ul = document.createElement('ul');
+  ul.className = 'opts';
+  const selected = new Set();
+  state.quiz.current.answer = [];
+  q.opts.forEach((opt, i) => {
+    const li = document.createElement('li');
+    const b = document.createElement('button');
+    b.className = 'opt-btn';
+    b.type = 'button';
+    b.textContent = opt;
+    b.addEventListener('click', () => {
+      if (selected.has(i)) { selected.delete(i); b.classList.remove('selected'); }
+      else { selected.add(i); b.classList.add('selected'); }
+      state.quiz.current.answer = [...selected].sort((a,b)=>a-b);
+      setSubmittable(selected.size > 0);
     });
     li.appendChild(b);
     ul.appendChild(li);
@@ -738,6 +777,12 @@ function renderShort(q, host) {
 function mark(q, ans) {
   switch (q.type) {
     case 'mcq': return ans === q.ans;
+    case 'multi': {
+      if (!Array.isArray(ans)) return false;
+      const a = [...ans].sort((x,y)=>x-y);
+      const b = [...q.ans].sort((x,y)=>x-y);
+      return a.length === b.length && a.every((v,i) => v === b[i]);
+    }
     case 'tf': return ans === q.ans;
     case 'match': return ans && q.pairs.every((p, i) => ans[i] === p[1]);
     case 'order': return ans && arrayEqual(ans, q.items);
@@ -757,6 +802,9 @@ function formatAnswer(q, ans) {
   if (ans == null || ans === '') return '(no answer)';
   switch (q.type) {
     case 'mcq': return q.opts[ans] ?? String(ans);
+    case 'multi': return Array.isArray(ans) && ans.length
+      ? ans.map(i => `${String.fromCharCode(65+i)}) ${q.opts[i] ?? '?'}`).join(', ')
+      : '(no answer)';
     case 'tf': return ans ? 'True' : 'False';
     case 'match': return q.pairs.map((p, i) => `${p[0]} → ${ans[i] ?? '?'}`).join('; ');
     case 'order': return ans.map((x, i) => `${i+1}. ${x}`).join(' | ');
@@ -767,6 +815,7 @@ function formatAnswer(q, ans) {
 function formatCorrect(q) {
   switch (q.type) {
     case 'mcq': return q.opts[q.ans];
+    case 'multi': return q.ans.map(i => `${String.fromCharCode(65+i)}) ${q.opts[i]}`).join(', ');
     case 'tf': return q.ans ? 'True' : 'False';
     case 'match': return q.pairs.map(p => `${p[0]} → ${p[1]}`).join('; ');
     case 'order': return q.items.map((x, i) => `${i+1}. ${x}`).join(' | ');
@@ -950,7 +999,7 @@ function renderTeacherList() {
     const li = document.createElement('li');
     li.innerHTML = `
       <span class="topic-badge ${q.t}">${escapeHtml(topicName(q.t))}</span>
-      <span class="q-id">${escapeHtml(q.id)} · ${q.type}</span>
+      <span class="q-id">${escapeHtml(q.id)} · ${typeLabel(q.type)}</span>
       <span class="q-text">${escapeHtml(q.q)}</span>
       <span class="q-actions">
         <button class="btn ghost small" data-act="edit">Edit</button>
@@ -991,6 +1040,17 @@ function openEditor(existing) {
           ${(q.opts || ['', '']).map((o, i) => `
             <div class="row" style="align-items:center;">
               <input type="radio" name="ans" value="${i}" ${q.ans === i ? 'checked' : ''} aria-label="Mark as correct">
+              <input type="text" class="grow" data-fld="opt" data-i="${i}" value="${escapeHtml(o)}" placeholder="Option ${i+1}">
+              <button class="btn small ghost" data-fld="opt-del" data-i="${i}" type="button">−</button>
+            </div>`).join('')}
+          <button class="btn ghost small" data-fld="opt-add" type="button">+ Add option</button>
+        `;
+      case 'multi':
+        return `
+          <p class="label" style="margin-bottom:6px;">Tick every option that is part of the correct answer.</p>
+          ${(q.opts || ['', '']).map((o, i) => `
+            <div class="row" style="align-items:center;">
+              <input type="checkbox" data-fld="multi-ans" data-i="${i}" ${Array.isArray(q.ans) && q.ans.includes(i) ? 'checked' : ''} aria-label="Mark as correct">
               <input type="text" class="grow" data-fld="opt" data-i="${i}" value="${escapeHtml(o)}" placeholder="Option ${i+1}">
               <button class="btn small ghost" data-fld="opt-del" data-i="${i}" type="button">−</button>
             </div>`).join('')}
@@ -1054,7 +1114,8 @@ function openEditor(existing) {
         <div class="grow">
           <label>Type</label>
           <select data-fld="type">
-            <option value="mcq" ${q.type === 'mcq' ? 'selected' : ''}>Multiple choice</option>
+            <option value="mcq" ${q.type === 'mcq' ? 'selected' : ''}>Multiple choice (single answer)</option>
+            <option value="multi" ${q.type === 'multi' ? 'selected' : ''}>Multiple answer (select all that apply)</option>
             <option value="tf" ${q.type === 'tf' ? 'selected' : ''}>True / false</option>
             <option value="match" ${q.type === 'match' ? 'selected' : ''}>Matching</option>
             <option value="order" ${q.type === 'order' ? 'selected' : ''}>Ordering</option>
@@ -1084,7 +1145,8 @@ function openEditor(existing) {
     if (expEl) expEl.addEventListener('input', e => q.exp = e.target.value);
     modal.querySelector('[data-fld="type"]').addEventListener('change', e => {
       q.type = e.target.value;
-      if (q.type === 'mcq') { q.opts = q.opts && q.opts.length >= 2 ? q.opts : ['', '']; q.ans = 0; }
+      if (q.type === 'mcq') { q.opts = q.opts && q.opts.length >= 2 ? q.opts : ['', '']; q.ans = typeof q.ans === 'number' ? q.ans : 0; if (q.ans >= q.opts.length) q.ans = 0; }
+      if (q.type === 'multi') { q.opts = q.opts && q.opts.length >= 2 ? q.opts : ['', '']; q.ans = Array.isArray(q.ans) ? q.ans.filter(i => i < q.opts.length) : []; }
       if (q.type === 'tf') { q.ans = true; }
       if (q.type === 'match') { q.pairs = q.pairs && q.pairs.length >= 2 ? q.pairs : [['',''],['','']]; }
       if (q.type === 'order') { q.items = q.items && q.items.length >= 2 ? q.items : ['','']; }
@@ -1101,7 +1163,12 @@ function openEditor(existing) {
         if (q.opts.length <= 2) return;
         const i = +el.dataset.i;
         q.opts.splice(i, 1);
-        if (q.ans >= q.opts.length) q.ans = 0;
+        if (q.type === 'mcq') {
+          if (q.ans === i) q.ans = 0;
+          else if (q.ans > i) q.ans = q.ans - 1;
+        } else if (q.type === 'multi') {
+          q.ans = (q.ans || []).filter(x => x !== i).map(x => x > i ? x - 1 : x);
+        }
         render();
       });
     });
@@ -1111,6 +1178,14 @@ function openEditor(existing) {
       r.addEventListener('change', e => {
         if (q.type === 'mcq') q.ans = parseInt(e.target.value, 10);
         if (q.type === 'tf') q.ans = e.target.value === 'true';
+      });
+    });
+    modal.querySelectorAll('[data-fld="multi-ans"]').forEach(cb => {
+      cb.addEventListener('change', e => {
+        const i = +e.target.dataset.i;
+        const set = new Set(Array.isArray(q.ans) ? q.ans : []);
+        if (e.target.checked) set.add(i); else set.delete(i);
+        q.ans = [...set].sort((a,b)=>a-b);
       });
     });
 
@@ -1147,6 +1222,7 @@ function openEditor(existing) {
   function save() {
     const out = { id: q.id, t: q.t, type: q.type, q: q.q };
     if (q.type === 'mcq') { out.opts = q.opts; out.ans = q.ans; if (q.exp) out.exp = q.exp; }
+    else if (q.type === 'multi') { out.opts = q.opts; out.ans = Array.isArray(q.ans) ? q.ans : []; if (q.exp) out.exp = q.exp; }
     else if (q.type === 'tf') { out.ans = q.ans; if (q.exp) out.exp = q.exp; }
     else if (q.type === 'match') { out.pairs = q.pairs; if (q.exp) out.exp = q.exp; }
     else if (q.type === 'order') { out.items = q.items; if (q.exp) out.exp = q.exp; }
