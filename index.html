@@ -181,16 +181,6 @@ input[type=file]{display:none}
       <button class="btn btn-primary" id="start-btn" onclick="startQuiz()" disabled>Start quiz →</button>
     </div>
   </div>
-  <div class="divider"></div>
-  <button class="btn btn-ghost btn-sm" onclick="toggleGate()">⚙ Teacher view</button>
-  <div id="t-gate" style="display:none;margin-top:1rem" class="card-sm">
-    <div class="slabel">Teacher PIN</div>
-    <div style="display:flex;gap:8px">
-      <input type="password" id="pin-inp" placeholder="Enter PIN (default: 1234)" style="max-width:220px" onkeydown="if(event.key==='Enter')checkPin()">
-      <button class="btn btn-sm" onclick="checkPin()">Enter</button>
-    </div>
-    <p id="pin-err" style="font-size:12px;color:var(--red);margin-top:6px;display:none">Incorrect PIN</p>
-  </div>
 </div>
 
 <!-- QUIZ -->
@@ -227,7 +217,7 @@ input[type=file]{display:none}
 <div class="screen" id="s-teacher">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:1.5rem">
     <div><div class="eyebrow">Teacher dashboard</div><div class="title">Question manager</div></div>
-    <button class="btn btn-ghost btn-sm" onclick="showScreen('s-home')">← Exit</button>
+    <button class="btn btn-ghost btn-sm" onclick="exitTeacher()">← Exit</button>
   </div>
 
   <div class="card">
@@ -263,12 +253,8 @@ input[type=file]{display:none}
   </div>
 
   <div class="card">
-    <div class="slabel">Change PIN</div>
-    <div style="display:flex;gap:8px">
-      <input type="password" id="new-pin" placeholder="New PIN" style="max-width:180px">
-      <button class="btn btn-sm" onclick="changePin()">Save</button>
-    </div>
-    <p id="pin-saved" style="font-size:12px;color:var(--green);margin-top:6px;display:none">Saved.</p>
+    <div class="slabel">About this page</div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.6">This teacher area is reached via a private link (the address ending in <code>#teacher</code>). Students using the normal link never see it. After adding or editing questions, click <b>Export question_bank.json</b> and upload the file to GitHub to publish your changes.</p>
   </div>
 </div>
 
@@ -341,7 +327,10 @@ async function boot(){
   }
   document.getElementById('loading').style.display='none';
   document.getElementById('app').style.display='block';
+  checkTeacherURL();
 }
+// If the teacher pastes/types the #teacher link while the page is already open
+window.addEventListener('hashchange',checkTeacherURL);
 
 // ── Home ──
 function onNameInput(){
@@ -611,22 +600,19 @@ function generateReport(){
 function closeReport(){document.getElementById('rpt-overlay').style.display='none';}
 document.getElementById('rpt-overlay').addEventListener('click',function(e){if(e.target===this)closeReport();});
 
-// ── Teacher ──
-function toggleGate(){const g=document.getElementById('t-gate');g.style.display=g.style.display==='none'?'block':'none';}
-function checkPin(){
-  const pin=localStorage.getItem('nesa_pin')||'1234';
-  if(document.getElementById('pin-inp').value===pin){
-    document.getElementById('t-gate').style.display='none';
-    document.getElementById('pin-inp').value='';
-    document.getElementById('pin-err').style.display='none';
-    renderQList();showScreen('s-teacher');
-  }else document.getElementById('pin-err').style.display='block';
+// ── Teacher (hidden behind #teacher in the URL) ──
+function checkTeacherURL(){
+  // Show the teacher dashboard only if the page is opened with #teacher in the address
+  const hash=(window.location.hash||'').toLowerCase();
+  if(hash==='#teacher'){
+    renderQList();
+    showScreen('s-teacher');
+  }
 }
-function changePin(){
-  const v=document.getElementById('new-pin').value.trim();if(!v)return;
-  localStorage.setItem('nesa_pin',v);
-  document.getElementById('pin-saved').style.display='block';
-  setTimeout(()=>document.getElementById('pin-saved').style.display='none',2500);
+function exitTeacher(){
+  // Clear the #teacher hash so a reload returns to the student view
+  history.replaceState(null,'',window.location.pathname+window.location.search);
+  showScreen('s-home');
 }
 function renderQList(){
   const tf=document.getElementById('f-topic').value,tyf=document.getElementById('f-type').value;
