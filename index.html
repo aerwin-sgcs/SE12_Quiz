@@ -317,6 +317,7 @@ input[type=file]{display:none}
 
 <script>
 const QB_URL='question_bank.json';
+const QUIZ_LENGTH=5;  // Number of questions per quiz. Change this value to adjust.
 const TOPICS={ssa:'Secure software architecture',web:'Programming for the web',auto:'Software automation',proj:'Software engineering project'};
 const TC={ssa:'#1D4ED8',web:'#065F46',auto:'#92400E',proj:'#581C87'};
 const TB={ssa:'#EFF6FF',web:'#ECFDF5',auto:'#FFFBEB',proj:'#FAF5FF'};
@@ -354,7 +355,9 @@ document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',functio
 }));
 function updateAvail(){
   const n=QB.filter(q=>S.topic==='all'||q.t===S.topic).length;
-  document.getElementById('q-avail').textContent=n+' question'+(n!==1?'s':'')+' available';
+  const ask=Math.min(n,QUIZ_LENGTH);
+  document.getElementById('q-avail').textContent=
+    n===0?'No questions available':`${ask} random question${ask!==1?'s':''} from a pool of ${n}`;
   document.getElementById('start-btn').disabled=n===0||!document.getElementById('student-name').value.trim();
 }
 
@@ -364,7 +367,8 @@ function startQuiz(pool){
   S.topic=document.querySelector('.chip.active').dataset.t;
   const src=pool||QB.filter(q=>S.topic==='all'||q.t===S.topic);
   if(!src.length)return;
-  S.queue=[...src].sort(()=>Math.random()-.5);
+  // Shuffle the pool, then take up to QUIZ_LENGTH questions
+  S.queue=[...src].sort(()=>Math.random()-.5).slice(0,QUIZ_LENGTH);
   S.idx=0;S.results=[];
   showScreen('s-quiz');renderQ();
 }
