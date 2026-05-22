@@ -1,7 +1,7 @@
 # SE12_Quiz
 Repository for quiz questions for SE12
 
-[Open this link to see the quiz](https://aerwin-sgcs.github.io/SE12_Quiz/NESA_SE_Quiz.html)
+[Open this link to see the quiz](https://aerwin-sgcs.github.io/SE12_Quiz/)
 
 Working on making this web app 
   * teacher can add new questions at any point
