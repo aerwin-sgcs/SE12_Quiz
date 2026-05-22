@@ -9,3 +9,6 @@ Working on making this web app
   * students can repeat any wrong answers until all questions are answered correctly
   * students compete with themselves
   * questions range in style - matching, drop and drag, T/F, multiple choice, short answers etc
+
+
+[Use this link for teachers to edit questions](https://aerwin-sgcs.github.io/SE12_Quiz/#Teacher)
