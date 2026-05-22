@@ -167,6 +167,7 @@ input[type=file]{display:none}
   </div>
   <div class="card">
     <div class="slabel">Your name</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px">Type your name before beginning the quiz</div>
     <input type="text" id="student-name" placeholder="Enter your full name" style="max-width:340px;margin-bottom:1.25rem" oninput="onNameInput()">
     <div id="topic-area" style="display:none">
       <div class="slabel" style="margin-bottom:10px">Choose topic</div>
@@ -177,7 +178,12 @@ input[type=file]{display:none}
         <button class="chip" data-t="auto">Software automation</button>
         <button class="chip" data-t="proj">Software engineering project</button>
       </div>
-      <div id="q-avail" style="font-size:13px;color:var(--muted);margin-bottom:1.25rem"></div>
+      <div id="q-avail" style="font-size:13px;color:var(--muted);margin-bottom:.5rem"></div>
+      <div class="slabel" style="margin-bottom:8px">Number of questions</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.25rem;flex-wrap:wrap">
+        <input type="number" id="q-qty" min="5" value="5" style="max-width:90px" oninput="updateAvail()">
+        <span style="font-size:13px;color:var(--muted)">Minimum 5, up to <span id="q-max">5</span></span>
+      </div>
       <button class="btn btn-primary" id="start-btn" onclick="startQuiz()" disabled>Start quiz →</button>
     </div>
   </div>
@@ -344,9 +350,16 @@ document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',functio
 }));
 function updateAvail(){
   const n=QB.filter(q=>S.topic==='all'||q.t===S.topic).length;
-  const ask=Math.min(n,QUIZ_LENGTH);
+  const qtyEl=document.getElementById('q-qty');
+  const maxQ=Math.max(5,n);
+  qtyEl.max=Math.max(5,n);
+  document.getElementById('q-max').textContent=n;
+  let qty=parseInt(qtyEl.value,10);
+  if(isNaN(qty)||qty<5)qty=5;
+  if(qty>n&&n>0)qty=n;
+  const ask=Math.min(n,qty);
   document.getElementById('q-avail').textContent=
-    n===0?'No questions available':`${ask} random question${ask!==1?'s':''} from a pool of ${n}`;
+    n===0?'No questions available':`Pool of ${n} question${n!==1?'s':''} available`;
   document.getElementById('start-btn').disabled=n===0||!document.getElementById('student-name').value.trim();
 }
 
@@ -356,8 +369,10 @@ function startQuiz(pool){
   S.topic=document.querySelector('.chip.active').dataset.t;
   const src=pool||QB.filter(q=>S.topic==='all'||q.t===S.topic);
   if(!src.length)return;
-  // Shuffle the pool, then take up to QUIZ_LENGTH questions
-  S.queue=[...src].sort(()=>Math.random()-.5).slice(0,QUIZ_LENGTH);
+  let qty=parseInt(document.getElementById('q-qty').value,10);
+  if(isNaN(qty)||qty<5)qty=5;
+  if(qty>src.length)qty=src.length;
+  S.queue=[...src].sort(()=>Math.random()-.5).slice(0,qty);
   S.idx=0;S.results=[];
   showScreen('s-quiz');renderQ();
 }
@@ -455,17 +470,7 @@ function rMatch(q){
     `<button class="btn btn-sm" style="margin-top:8px" onclick="cMatch('${q.id}')">Check answers</button>`;
 }
 function syncMatch(n){
-  // Disable any option in OTHER dropdowns that is currently selected in some dropdown
-  const chosen=new Set();
-  for(let i=0;i<n;i++){const s=document.getElementById('ms'+i);if(s&&s.value)chosen.add(s.value);}
-  for(let i=0;i<n;i++){
-    const s=document.getElementById('ms'+i);if(!s)continue;
-    const own=s.value;
-    Array.from(s.options).forEach(opt=>{
-      if(!opt.value)return; // skip the placeholder
-      opt.disabled = chosen.has(opt.value) && opt.value!==own;
-    });
-  }
+  // Greying out of already-chosen definitions removed by request — students can pick any option in any dropdown.
 }
 function cMatch(id){
   const q=QB.find(x=>x.id===id);let cor=0;const sa=[];

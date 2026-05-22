@@ -44,7 +44,7 @@ Each question has a `type` field driving how it renders and how the answer is ch
 | `mcq`    | `opts[]`, `ans` (index)      | Exact index match                                    |
 | `multi`  | `opts[]`, `ans[]` (indices)  | Strict — must select every correct option and no incorrect ones. Show "Select all that apply" hint; do not reveal the number of correct answers |
 | `tf`     | `ans` (boolean)              | Exact boolean match                                  |
-| `match`  | `pairs[]` (term/def tuples)  | All pairs correct. **Each definition may only be selected once** — disable it in other dropdowns once chosen |
+| `match`  | `pairs[]` (term/def tuples)  | All pairs correct. Every dropdown lists every definition independently — students may select the same definition in more than one dropdown (the "disable once chosen" behaviour was removed by teacher request) |
 | `order`  | `items[]` in correct order   | Exact sequence match                                 |
 | `fillin` | `accept[]` (alt answers)     | Case-insensitive includes match                      |
 | `short`  | `keywords[]`, `sample`       | Keyword inclusion ≥50% = pass (no AI)                |
@@ -54,14 +54,15 @@ Topics are keyed: `ssa` (Secure Software Architecture), `web` (Programming for t
 ### App features as built
 
 **Student flow:**
-1. Enter name (free text, no validation, no persistence)
+1. Enter name (free text, no validation, no persistence). The home screen shows the prompt "Type your name before beginning the quiz" under the name field
 2. Pick topic chip or "All topics"
-3. Random selection from the topic pool — full pool shuffled, one pass
-4. After each question: instant correct/incorrect feedback with explanation
-5. End-of-session summary with correct/total/percentage
-6. "Retry wrong answers" button starts a fresh quiz over only the wrong ones
-7. "Generate report" produces a printable HTML overlay; native browser print → PDF
-8. Report shows every question, student's answer, correct answer (if wrong), score
+3. Choose how many questions to attempt — number input, minimum 5, capped at the size of the chosen topic pool
+4. Random selection from the topic pool — pool shuffled, sliced to the chosen quantity
+5. After each question: instant correct/incorrect feedback with explanation
+6. End-of-session summary with correct/total/percentage
+7. "Retry wrong answers" button starts a fresh quiz over only the wrong ones
+8. "Generate report" produces a printable HTML overlay; native browser print → PDF
+9. Report shows every question, student's answer, correct answer (if wrong), score
 
 **Teacher flow:**
 1. Open the site with `#teacher` appended to the URL (e.g. `yoursite.github.io/#teacher`) — there is no visible teacher button on the student home screen
@@ -78,7 +79,7 @@ Topics are keyed: `ssa` (Secure Software Architecture), `web` (Programming for t
 - Pure vanilla JS — no framework
 - Pure CSS — no Tailwind, no build step
 - Fonts: Fraunces (display serif) + DM Sans (body) + DM Mono (labels), all from Google Fonts CDN
-- Light theme — cream/off-white palette, dark ink for primary buttons, topic-coloured accents
+- Light theme — light blue page background (`#E3F2FD`), white card surfaces, dark ink for primary buttons, topic-coloured accents
 - Drag-and-drop ordering uses native HTML5 drag events (works desktop, not great on touch — known limitation)
 - No localStorage at all — teacher access is via an unlisted `#teacher` URL, not a stored PIN
 - No external API calls — fully offline-capable after first load (fonts cache)
@@ -283,7 +284,9 @@ This is a much bigger build. Don't do it pre-emptively.
 A successful rebuild passes this manual checklist:
 
 - [ ] Open `index.html` directly from disk → app loads, can take a quiz, all six question types work
-- [ ] Matching question: once a definition is selected in one dropdown, it disappears (or is greyed out) from every other dropdown — students cannot pick the same answer four times
+- [ ] Matching question: every dropdown lists every definition; selections in other dropdowns do not grey out or remove options (the previous "disable once chosen" behaviour was removed)
+- [ ] Home screen: the prompt "Type your name before beginning the quiz" appears under the name field; topic chips and question quantity input stay hidden until a name is entered
+- [ ] Question quantity selector accepts integers from 5 up to the size of the selected topic pool
 - [ ] Open via GitHub Pages → identical behaviour
 - [ ] Take a quiz with deliberate wrong answers → end-screen shows correct count, lists wrong questions, retry button restarts with only those
 - [ ] Generate report → printable view with student name, date, each question, each answer, correctness, score
